@@ -1,21 +1,30 @@
-from flask import Flask, render_template, request
+from flask import Flask, render_template, request, session
 import os
 
 app = Flask(__name__)
-#session['username'] = request.form['username']
-#session['password'] = request.form['password']
 app.secret_key = os.urandom(32)
+accounts = dict()
+accounts['username'] = 'password'
 
-@app.route('/')
+
+@app.route('/', methods = 'POST')
 def root():
+    session['username'] = request.form['username']
+    session['password'] = request.form['password']
     return render_template('root.html')
 
 @app.route('/welcome', methods = ['POST'])
 def welcome():
-    if request.form['password'] == 'password':
-        return render_template('welcome.html', name = request.form['username'])
+    if sessions['username'] in accounts.keys() and accounts[session['username']] == session['password']:
+        return render_template('welcome.html', name = session['username'])
     else:
         return render_template('root.html', message = 'Incorrect password-please try again')
+
+@app.route('/logout', methods = ['POST'])
+def logout():
+    session.pop()
+    return render_template('logout.html')
+
 if __name__ == '__main__':
     app.debug = True
     app.run()
